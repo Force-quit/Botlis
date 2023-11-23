@@ -21,7 +21,7 @@ async def play(ctx, url):
         
         #gather the data for the request
         channel = ctx.author.voice.channel
-        youtube_audio = YouTube(url).streams.filter(only_audio=True).first()
+        youtube_audio = YouTube(url).streams.get_audio_only()
         audio_file = youtube_audio.download(output_path="downloads")
         voice_client = await channel.connect()
         
