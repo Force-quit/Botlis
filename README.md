@@ -12,7 +12,7 @@ Botlis is a discord bot written in python used for playing music in voice client
 - Source your virtual environment (every time you want to issue some command for the project) :
   - on Windows PS: .\env\Scripts\Activate.ps1
   - on Windows CMD: .\env\Scripts\activate.bat
-  - on linux/mac: env/bin/activate
+  - on linux/mac: source env/bin/activate
 - Install the requirements : pip install -r requirements.txt
 - Install ffmpeg.exe and add it to your %PATH% (figure it out).
 
