@@ -5,8 +5,11 @@ Botlis is a discord bot written in python used for playing music in voice client
 ## Setup
 - Use python 3.11.x
 - Open in VS Code
-- Open terminal and type : py -m venv env
-- Source your virtual environment :
+- Open terminal and create virtual environment (first time only)
+  - on Windows: py -m venv env
+  - on Windows (older installations of python): python -m venv env
+  - on linux/mac: python -m venv env
+- Source your virtual environment (every time you want to issue some command for the project) :
   - on Windows PS: .\env\Scripts\Activate.ps1
   - on Windows CMD: .\env\Scripts\activate.bat
   - on linux/mac: env/bin/activate
