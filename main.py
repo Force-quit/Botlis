@@ -1,4 +1,4 @@
-import asyncio, discord
+import asyncio, discord, io
 from player import Player
 from dotenv import dotenv_values
 from pytube import YouTube
@@ -21,15 +21,16 @@ async def play(ctx, url):
         
         #gather the data for the request
         channel = ctx.author.voice.channel
+        buffer = io.BytesIO()
         youtube_audio = YouTube(url).streams.filter(only_audio=True).first()
-        audio_file = youtube_audio.download(output_path="downloads")
+        youtube_audio.stream_to_buffer(buffer)
         voice_client = await channel.connect()
-        
+        buffer.seek(0)
         #generate the Player instance that will handle cleanup with existing request data
-        player = Player(voice_client, audio_file, asyncio.get_running_loop())
+        player = Player(voice_client, asyncio.get_running_loop())
         
         #generate the audio and play it
-        source = discord.FFmpegPCMAudio(audio_file)
+        source = discord.FFmpegPCMAudio(buffer, pipe=True)
         voice_client.play(source, after=player.play_after)# after is the callback to our player cleanup code
         
         #modify the original interaction message to show we are live and also refresh the interaction window
