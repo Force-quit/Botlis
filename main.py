@@ -1,4 +1,5 @@
-import discord, os, shutil
+import asyncio, discord, os, shutil
+from player import Player
 from dotenv import dotenv_values
 from pytube import YouTube
 
@@ -15,26 +16,26 @@ async def ping(ctx):
 @bot.slash_command()
 async def play(ctx, url):
     if not is_connected(ctx):
+        #interact with the request to enable 15 minute interaction window
         interaction = await ctx.respond("Loading this bitch up")
+        
+        #gather the data for the request
         channel = ctx.author.voice.channel
         youtube_audio = YouTube(url).streams.filter(only_audio=True).first()
         audio_file = youtube_audio.download(output_path="downloads")
         voice_client = await channel.connect()
+        
+        #generate the Player instance that will handle cleanup with existing request data
+        player = Player(voice_client, audio_file, asyncio.get_running_loop())
+        
+        #generate the audio and play it
         source = discord.FFmpegPCMAudio(audio_file)
-        voice_client.play(source, after=play_after)
+        voice_client.play(source, after=player.play_after)# after is the callback to our player cleanup code
+        
+        #modify the original interaction message to show we are live and also refresh the interaction window
         await interaction.edit_original_response(content=f"You're playing {youtube_audio.title}")
     else:
         interaction = await ctx.respond("Sorry, I'm already playing a song somewhere.")
-
-def play_after(error):
-    if error != None:
-        print(error)
-    else:
-        delete_download()
-
-#should delete the downloaded audio once we're done playing
-def delete_download():
-    shutil.rmtree("downloads")
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
