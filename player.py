@@ -6,15 +6,16 @@ class Player:
         Helper class that provides music playing services
     """
 
-    def __init__(self, voice_client, loop):
+    def __init__(self, voice_client, command_channel, loop):
         self._voice_client = voice_client
+        self._command_channel = command_channel
         self._loop = loop
         self._queue = []
         self._ctx = None
         self._current_title = ""
         self._last_interaction = None
 
-    async def play(self, url, ctx=None, loading_interaction = None):
+    async def play(self, url, loading_interaction = None):
         buffer = io.BytesIO()
 
         youtube_audio = YouTube(url).streams.get_audio_only()
@@ -28,7 +29,7 @@ class Player:
         if loading_interaction is not None:
             await loading_interaction.edit_original_response(content=f"Now playing: {self._current_title}!")
         else:
-            await self._ctx.send(f"Now playing: {self._current_title}!")
+            await self._command_channel.send(f"Now playing: {self._current_title}!")
         
 
     async def queue(self, ctx, url):
