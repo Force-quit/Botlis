@@ -1,5 +1,4 @@
-import discord
-import os
+import discord, os, shutil
 from dotenv import dotenv_values
 from pytube import YouTube
 
@@ -22,14 +21,20 @@ async def play(ctx, url):
         audio_file = youtube_audio.download(output_path="downloads")
         voice_client = await channel.connect()
         source = discord.FFmpegPCMAudio(audio_file)
-        voice_client.play(source, lambda error: delete_download(audio_file))
+        voice_client.play(source, after=play_after)
         await interaction.edit_original_response(content=f"You're playing {youtube_audio.title}")
     else:
         interaction = await ctx.respond("Sorry, I'm already playing a song somewhere.")
 
+def play_after(error):
+    if error != None:
+        print(error)
+    else:
+        delete_download()
+
 #should delete the downloaded audio once we're done playing
-def delete_download(audio_file):
-    os.remove(f"downloads/{audio_file}")
+def delete_download():
+    shutil.rmtree("downloads")
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
