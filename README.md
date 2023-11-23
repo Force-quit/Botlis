@@ -3,7 +3,7 @@
 Botlis is a discord bot written in python used for playing music in voice clients. So far only youtube and single channel play are supported.
 
 ## Setup
-- Use python 3.11.6
+- Use python 3.11.x
 - Open in VS Code
 - Open terminal and type : py -m venv env
 - Source your virtual environment :
