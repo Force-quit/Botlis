@@ -3,3 +3,4 @@ env
 downloads
 __pycache__
 ffmpeg.exe
+.vscode
