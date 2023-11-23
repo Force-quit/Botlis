@@ -6,7 +6,9 @@ class Player:
         Helper class that provides music playing services
     """
 
-    def __init__(self, voice_client, command_channel, loop):
+    def __init__(self, voice_client, command_channel, loop, guild_id, call_when_finished):
+        self._guild_id = guild_id
+        self._call_when_finished = call_when_finished
         self._voice_client = voice_client
         self._command_channel = command_channel
         self._loop = loop
@@ -14,6 +16,7 @@ class Player:
         self._ctx = None
         self._current_title = ""
         self._last_interaction = None
+        self._is_skipping = False
 
     async def play(self, url, loading_interaction = None):
         buffer = io.BytesIO()
@@ -24,6 +27,9 @@ class Player:
         self._current_title = youtube_audio.title
 
         source = discord.FFmpegPCMAudio(buffer, pipe=True)
+        if self._voice_client.is_playing():
+            self._is_skipping = True
+            self._voice_client.stop()
         self._voice_client.play(source, after=self.play_after)
         
         if loading_interaction is not None:
@@ -41,14 +47,30 @@ class Player:
     @property
     def current_title(self):
         return self._current_title
+    
+    @property
+    def has_a_queue(self):
+        return len(self._queue) > 0
 
-    def play_after(self, error):
+    def play_after(self, error=None):
+        if self._is_skipping:
+            self._is_skipping = False
+            return
+
         if error is not None:
             print(error)
-        elif self._queue is not None and self._queue != []:
+        elif self.has_a_queue:
             asyncio.run_coroutine_threadsafe(self.play(self._queue.pop(0)), self._loop)
         else:
             asyncio.run_coroutine_threadsafe(self.disconnect(), self._loop)
 
     async def disconnect(self):
+        self._call_when_finished(self._guild_id)
         await self._voice_client.disconnect()
+
+    async def skip(self, ctx):
+        if self.has_a_queue:
+            await ctx.respond("Skipping...")
+            self.play_after()
+        else:
+            await ctx.respond("There is no queue my friend")
