@@ -1,4 +1,4 @@
-import asyncio, discord, os, shutil
+import asyncio, discord
 from player import Player
 from dotenv import dotenv_values
 from pytube import YouTube
@@ -7,7 +7,7 @@ config = dotenv_values(".env")
 
 bot = discord.Bot()
 
-@bot.slash_command()
+@bot.slash_command(guild_ids=["1177073238346567760"])
 async def ping(ctx):
     interraction = await ctx.respond("pong!")
     message = await interraction.original_response()
