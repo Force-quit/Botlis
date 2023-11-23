@@ -39,11 +39,8 @@ async def play(ctx, url):
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
-    for guild in ctx.bot.guilds:
-        voice_client = discord.utils.get(ctx.bot.voice_clients, guild=guild)
-        if voice_client and voice_client.is_connected():
-            return True
-    return False
+    voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+    return voice_client and voice_client.is_connected()
 
 if __name__ == "__main__":
     bot.run(config["TOKEN"])
