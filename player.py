@@ -1,5 +1,6 @@
 import asyncio, discord, io
 from pytube import YouTube
+from pytube import Playlist
 
 class Player:
     """
@@ -19,14 +20,11 @@ class Player:
         self._is_skipping = False
 
     async def play(self, url, loading_interaction = None):
-        buffer = io.BytesIO()
+        source = await self.source_factory(url)
+        if source is None:
+            await loading_interaction.edit_original_response(content=f"Can't load this url")
+            return
 
-        youtube_audio = YouTube(url).streams.get_audio_only()
-        youtube_audio.stream_to_buffer(buffer)
-        buffer.seek(0)
-        self._current_title = youtube_audio.title
-
-        source = discord.FFmpegPCMAudio(buffer, pipe=True)
         if self._voice_client.is_playing():
             self._is_skipping = True
             self._voice_client.stop()
@@ -39,8 +37,12 @@ class Player:
         
 
     async def queue(self, ctx, url):
-        self._ctx = ctx
         self._queue.append(url)
+        
+        if ctx is None:
+            return
+        
+        self._ctx = ctx
         youtube_audio = YouTube(url).streams.get_audio_only()
         self._last_interaction = await ctx.respond(f"Track {youtube_audio.title} queued!")
 
@@ -74,3 +76,27 @@ class Player:
             self.play_after()
         else:
             await ctx.respond("There is no queue my friend")
+
+    async def source_factory(self, url):
+        if 'youtube.com/playlist' in url:
+            p = Playlist(url)
+            buffer = io.BytesIO()
+            
+            for i, video in enumerate(p.videos):
+                if i == 0:
+                    youtube_audio =video.streams.get_audio_only()
+                    youtube_audio.stream_to_buffer(buffer)
+                    buffer.seek(0)
+                    self._current_title = youtube_audio.title
+                else:
+                    await self.queue(None, video.watch_url)
+            return discord.FFmpegPCMAudio(buffer, pipe=True)
+        elif 'youtube.com/watch' in url or 'youtu.be' in url:
+            buffer = io.BytesIO()
+            youtube_audio = YouTube(url).streams.get_audio_only()
+            youtube_audio.stream_to_buffer(buffer)
+            buffer.seek(0)
+            self._current_title = youtube_audio.title
+            return discord.FFmpegPCMAudio(buffer, pipe=True)
+
+        return None

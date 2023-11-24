@@ -7,13 +7,13 @@ config = dotenv_values(".env")
 bot = discord.Bot()
 players = {}
 
-@bot.slash_command(guild_ids=["1177073238346567760"])
+@bot.slash_command(guild_ids=["1177073238346567760"], description="Pings the bot to see if it's alive")
 async def ping(ctx):
     interraction = await ctx.respond("pong!")
     message = await interraction.original_response()
     await message.add_reaction("👌")
 
-@bot.slash_command()
+@bot.slash_command(description="Skips to the next track in the queue")
 async def skip(ctx):
     if players.get(ctx.guild):
         await players[ctx.guild].skip(ctx)
@@ -22,7 +22,7 @@ async def skip(ctx):
         message = await interraction.original_response()
         await message.add_reaction("🤨")
 
-@bot.slash_command()
+@bot.slash_command(description="Play music by providing a link. Also works for playlist links.")
 async def play(ctx, url):
     if is_connected(ctx):
         await players[ctx.guild].queue(ctx, url)
