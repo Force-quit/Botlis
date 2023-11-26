@@ -31,7 +31,7 @@ async def play(ctx, url):
         voice_channel = ctx.author.voice.channel
         command_channel = ctx.channel
         voice_client = await voice_channel.connect()
-        players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild, player_finished)
+        players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild)
     
     try:
         await players[ctx.guild].play(url, interaction)
@@ -56,8 +56,10 @@ def is_connected(ctx):
     voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
     return voice_client and voice_client.is_connected()
 
-def player_finished(guild_id):
-    del players[guild_id]
+@bot.event
+async def on_voice_state_update(member, before, after):
+    if member == bot.user and after.channel is None:
+        del players[before.channel.guild]
 
 if __name__ == "__main__":
     bot.run(config["DEV_TOKEN"])

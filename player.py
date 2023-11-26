@@ -2,16 +2,14 @@ import asyncio
 from pytube import YouTube
 from pytube import Playlist
 from songs import Song, YoutubeSong
-from typing import Callable
 
 class Player:
     """
         Helper class that provides music playing services
     """
 
-    def __init__(self, voice_client, command_channel, loop, guild_id, call_when_finished: Callable):
+    def __init__(self, voice_client, command_channel, loop, guild_id):
         self._guild_id = guild_id
-        self._call_when_finished = call_when_finished # To signal owner that it can delete this object
         self._voice_client = voice_client
         self._command_channel = command_channel
         self._loop = loop
@@ -25,11 +23,11 @@ class Player:
         """
 
         song = self.source_factory(url)
-        if song.has_error:
+        if song is None or song.has_error:
             if loading_interaction is not None:
-                await loading_interaction.edit_original_response(content=f"Can't load {song.url}")
+                await loading_interaction.edit_original_response(content=f"Can't load {url}")
             else:
-                await self._command_channel.send(f"Can't load {song.url}")
+                await self._command_channel.send(f"Can't load {url}")
             self.song_finished()
             return
 
@@ -72,11 +70,7 @@ class Player:
         elif self.has_a_queue:
             asyncio.run_coroutine_threadsafe(self.play(self._queue.pop(0)), self._loop)
         else:
-            asyncio.run_coroutine_threadsafe(self.disconnect(), self._loop)
-
-    async def disconnect(self):
-        self._call_when_finished(self._guild_id)
-        await self._voice_client.disconnect()
+            asyncio.run_coroutine_threadsafe(self._voice_client.disconnect(), self._loop)
 
     async def skip(self, ctx):
         if self.has_a_queue:
