@@ -29,15 +29,18 @@ async def play(ctx, url):
         return 
     
     interaction = await ctx.respond("Loading this bitch up")
-    voice_channel = ctx.author.voice.channel
-    command_channel = ctx.channel
-    
-    #connect to the VC
-    voice_client = await voice_channel.connect()
-    
-    #generate the Player instance that will handle cleanup with existing request data
-    players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild, player_finished)
-    await players[ctx.guild].play(url, interaction)
+    try:
+        voice_channel = ctx.author.voice.channel
+        command_channel = ctx.channel
+
+        #connect to the VC
+        voice_client = await voice_channel.connect()
+
+        #generate the Player instance that will handle cleanup with existing request data
+        players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild, player_finished)
+        await players[ctx.guild].play(url, interaction)
+    except:
+        await interaction.edit_original_response(content="There seems to be an issue connecting to the server. Are you in a voice channel?")
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
@@ -48,4 +51,4 @@ def player_finished(guild_id):
     del players[guild_id]
 
 if __name__ == "__main__":
-    bot.run(config["TOKEN"])
+    bot.run(config["DEV_TOKEN"])
