@@ -22,7 +22,12 @@ class Player:
     async def play(self, url, loading_interaction = None):
         source = await self.source_factory(url)
         if source is None:
-            await loading_interaction.edit_original_response(content=f"Can't load this url")
+            if loading_interaction is not None:
+                await loading_interaction.edit_original_response(content=f"Can't load this url")
+                self.play_after()
+            else:
+                await self._command_channel.send(f"There was an error playing this song")
+                self.play_after()
             return
 
         if self._voice_client.is_playing():
@@ -78,25 +83,27 @@ class Player:
             await ctx.respond("There is no queue my friend")
 
     async def source_factory(self, url):
-        if 'youtube.com/playlist' in url:
-            p = Playlist(url)
-            buffer = io.BytesIO()
-            
-            for i, video in enumerate(p.videos):
-                if i == 0:
-                    youtube_audio =video.streams.get_audio_only()
-                    youtube_audio.stream_to_buffer(buffer)
-                    buffer.seek(0)
-                    self._current_title = youtube_audio.title
-                else:
-                    await self.queue(None, video.watch_url)
-            return discord.FFmpegPCMAudio(buffer, pipe=True)
-        elif 'youtube.com/watch' in url or 'youtu.be' in url:
-            buffer = io.BytesIO()
-            youtube_audio = YouTube(url).streams.get_audio_only()
-            youtube_audio.stream_to_buffer(buffer)
-            buffer.seek(0)
-            self._current_title = youtube_audio.title
-            return discord.FFmpegPCMAudio(buffer, pipe=True)
+        try:
+            if 'youtube.com/playlist' in url:
+                p = Playlist(url)
+                buffer = io.BytesIO()
 
-        return None
+                for i, video in enumerate(p.videos):
+                    if i == 0:
+                        youtube_audio =video.streams.get_audio_only()
+                        youtube_audio.stream_to_buffer(buffer)
+                        buffer.seek(0)
+                        self._current_title = youtube_audio.title
+                    else:
+                        await self.queue(None, video.watch_url)
+                return discord.FFmpegPCMAudio(buffer, pipe=True)
+            elif 'youtube.com/watch' in url or 'youtu.be' in url:
+                buffer = io.BytesIO()
+                youtube_audio = YouTube(url).streams.get_audio_only()
+                youtube_audio.stream_to_buffer(buffer)
+                buffer.seek(0)
+                self._current_title = youtube_audio.title
+                return discord.FFmpegPCMAudio(buffer, pipe=True)
+            return None
+        except:
+            return None
