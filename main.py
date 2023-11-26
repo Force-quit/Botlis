@@ -1,6 +1,8 @@
 import asyncio, discord
-from player import Player
 from dotenv import dotenv_values
+from player import Player
+from pytube import YouTube
+
 
 config = dotenv_values(".env")
 
@@ -41,6 +43,22 @@ async def play(ctx, url):
         await players[ctx.guild].play(url, interaction)
     except:
         await interaction.edit_original_response(content="There seems to be an issue connecting to the server. Are you in a voice channel?")
+
+@bot.slash_command(description="Show the current queue.")
+async def queue(ctx):
+    if is_connected(ctx):
+        if players[ctx.guild].has_a_queue:
+            interaction = await ctx.respond("Loading...")
+            titles = []
+            for url in players[ctx.guild].get_queue:
+                youtube_audio = YouTube(url).streams.get_audio_only()
+                titles.append(youtube_audio.title)
+            join_str = ", \n".join(titles)
+            await interaction.edit_original_response(content=f"Current queue: {join_str}")
+        else:
+            await ctx.respond("No queue")
+    else:
+        await ctx.respond("Not connected here")
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):

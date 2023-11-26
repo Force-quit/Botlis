@@ -58,6 +58,10 @@ class Player:
     @property
     def has_a_queue(self):
         return len(self._queue) > 0
+    
+    @property
+    def get_queue(self):
+        return self._queue
 
     def play_after(self, error=None):
         if self._is_skipping:
