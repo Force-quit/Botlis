@@ -1,6 +1,7 @@
 import asyncio, discord
-from player import Player
 from dotenv import dotenv_values
+from pytube.exceptions import AgeRestrictedError
+from player import Player
 
 config = dotenv_values(".env")
 
@@ -24,23 +25,31 @@ async def skip(ctx):
 
 @bot.slash_command(description="Play music by providing a link. Also works for playlist links.")
 async def play(ctx, url):
-    if is_connected(ctx):
-        await players[ctx.guild].queue(ctx, url)
-        return 
-    
     interaction = await ctx.respond("Loading this bitch up")
-    try:
+
+    if not players.get(ctx.guild):
         voice_channel = ctx.author.voice.channel
         command_channel = ctx.channel
-
-        #connect to the VC
         voice_client = await voice_channel.connect()
-
-        #generate the Player instance that will handle cleanup with existing request data
         players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild, player_finished)
+    
+    try:
         await players[ctx.guild].play(url, interaction)
-    except:
-        await interaction.edit_original_response(content="There seems to be an issue connecting to the server. Are you in a voice channel?")
+    except AgeRestrictedError:
+        await interaction.edit_original_response(content="This video is age restricted.")
+    except Exception as pp:
+        await interaction.edit_original_response(content="There seems to be an issue playing this.")
+
+@bot.slash_command(description="Show the current queue.")
+async def queue(ctx):
+    if is_connected(ctx):
+        if players[ctx.guild].has_a_queue:
+            message = await ctx.respond("Loading...")
+            await message.edit_original_response(content=players[ctx.guild].queue)
+        else:
+            await ctx.respond("No queue")
+    else:
+        await ctx.respond("Not connected here")
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
