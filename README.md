@@ -18,8 +18,9 @@ Botlis is a discord bot written in python used for playing music in voice client
 
 You're now ready to work on the project
 
+## Commands
+- `/play [url]` : takes a URL (youtube video or playlist, for now) and plays the audio in the channel that the author of the command was in
+- `/queue` : shows the queued songs
+
 ## Features
-- `/play [url]` slash command, which takes a youtube URL and plays the audio of the video in the channel that the author of the command was in
-- `/queue` slash command, shows the queued songs
-- automatic storage management: all assets used by the /play command are managed automatically once the playing stops, this prevents storage from getting destroyed
 - bot disconnects once it's done playing
