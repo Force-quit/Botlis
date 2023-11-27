@@ -83,9 +83,7 @@ class Player:
     async def stop_and_disconnect(self):
         if self._voice_client.is_playing():
             self._voice_client.stop()
-        if self._voice_client.is_connected():
-            await self._voice_client.disconnect()
-        self._queue.clear()
+        await self._voice_client.disconnect()
 
     def source_factory(self, url) -> Song:
         if 'youtube.com/playlist' in url:
