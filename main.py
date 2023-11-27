@@ -39,6 +39,16 @@ async def play(ctx, url):
     players[ctx.guild] = Player(voice_client, command_channel, asyncio.get_running_loop(), ctx.guild, player_finished)
     await players[ctx.guild].play(url, interaction)
 
+#Code to implement bot stop music command
+@bot.slash_command(description="Stops the music and disconnects the bot")
+async def stop(ctx):
+    if players.get(ctx.guild):
+        await players[ctx.guild].stop_and_disconnect()
+        del players[ctx.guild]  # Remove the player instance
+        await ctx.respond("Stopped and disconnected.")
+    else:
+        await ctx.respond("No active player found.")
+
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
     voice_client = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
