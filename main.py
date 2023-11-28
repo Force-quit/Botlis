@@ -56,7 +56,6 @@ async def queue(ctx):
 async def stop(ctx):
     if players.get(ctx.guild):
         await players[ctx.guild].stop_and_disconnect()
-        del players[ctx.guild]  # Remove the player instance
         await ctx.respond("Stopped and disconnected.")
     else:
         await ctx.respond("No active player found.")
