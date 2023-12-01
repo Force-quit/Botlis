@@ -1,5 +1,6 @@
-import asyncio, discord
+import asyncio, discord, io
 from dotenv import dotenv_values
+from pytube import YouTube
 from pytube.exceptions import AgeRestrictedError
 from player import Player
 
@@ -59,6 +60,24 @@ async def stop(ctx):
         await ctx.respond("Stopped and disconnected.")
     else:
         await ctx.respond("No active player found.")
+
+# create Slash Command group with bot.create_group
+mencaliss = bot.create_group("mencaliss", "???")
+
+@mencaliss.command()
+async def vc(ctx):
+    await play(ctx, "https://www.youtube.com/watch?v=FG-Ldd2YDPY")
+
+@mencaliss.command()
+async def vid(ctx):
+    interaction = await ctx.respond("Loading...")
+    video = YouTube("https://www.youtube.com/watch?v=FG-Ldd2YDPY")
+    video_buffer = io.BytesIO()
+    video_stream = video.streams.get_highest_resolution()
+    video_stream.stream_to_buffer(video_buffer)
+    video_buffer.seek(0)
+    video_file = discord.File(video_buffer, filename="video.mp4")
+    await interaction.edit_original_response(content="", file=video_file)
 
 #code that checks using the request context if the bot is connected to a Voice Channel in the same server(partial fix to multi-call issue)
 def is_connected(ctx):
