@@ -29,7 +29,7 @@ class YoutubeSong(Song):
         self.__youtube_object = None
 
         try:
-            self.__youtube_object = YouTube(song_url)
+            self.__youtube_object = YouTube(song_url, use_oauth=True, allow_oauth_cache=True)
     
             if self.__youtube_object.author == "unknown":
                 raise VideoUnavailable(song_url)
@@ -46,7 +46,7 @@ class YoutubeSong(Song):
         youtube_audio.stream_to_buffer(buffer)
         buffer.seek(0)
 
-        return discord.FFmpegPCMAudio(buffer, pipe=True)
+        return discord.FFmpegPCMAudio(buffer, pipe=True, options="-vn")
     
     @property
     def title(self):
