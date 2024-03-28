@@ -39,7 +39,7 @@ async def play(ctx, url):
     except AgeRestrictedError:
         await interaction.edit_original_response(content="This video is age restricted.")
     except Exception as pp:
-        await interaction.edit_original_response(content="There seems to be an issue playing this.")
+        await interaction.edit_original_response(content=f"There seems to be an issue playing this. {pp}")
 
 @bot.slash_command(description="Show the current queue.")
 async def queue(ctx):
