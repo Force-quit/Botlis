@@ -1,5 +1,5 @@
 import asyncio
-from pytube import YouTube
+from pytube import Search, YouTube
 from pytube import Playlist
 from songs import Song, YoutubeSong
 
@@ -96,5 +96,8 @@ class Player:
             return song
         elif 'youtube.com/watch' in url or 'youtu.be' in url:
             return YoutubeSong(url)
+        else:
+            results = Search(url)
+            return YoutubeSong(results.results[0].watch_url)
         
         return None
